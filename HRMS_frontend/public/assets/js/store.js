@@ -248,6 +248,34 @@
       if (!resp.res.ok) throw new Error((resp.data && resp.data.message) || "Role update failed");
       return resp.data.data;
     },
+
+    // ---- Attendance API --------------------------------------------------
+    // undefined = couldn't reach API; null = fetched but no record today; object = record
+    async apiToday() {
+      if (!window.HRMS.api) return undefined;
+      try { const r = await HRMS.api.get("/attendance/today"); return r.res.ok ? r.data.data : undefined; }
+      catch (_e) { return undefined; }
+    },
+    async apiCheckIn() {
+      const r = await HRMS.api.post("/attendance/check-in");
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Check-in failed");
+      return r.data.data;
+    },
+    async apiCheckOut() {
+      const r = await HRMS.api.put("/attendance/check-out");
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Check-out failed");
+      return r.data.data;
+    },
+    async apiMyAttendance(month) {
+      if (!window.HRMS.api) return null;
+      try { const r = await HRMS.api.get("/attendance/me" + (month ? "?month=" + month : "")); return r.res.ok ? r.data.data : null; }
+      catch (_e) { return null; }
+    },
+    async apiAllAttendance(date) {
+      if (!window.HRMS.api) return null;
+      try { const r = await HRMS.api.get("/attendance/all" + (date ? "?date=" + date : "")); return r.res.ok ? r.data.data : null; }
+      catch (_e) { return null; }
+    },
   };
 
   window.HRMS = window.HRMS || {};

@@ -89,19 +89,38 @@
 
     if (attView === "day") {
       dateLabel.textContent = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-      const rows = store.attendanceToday().map((a) => {
-        const e = store.employee(a.empId) || { name: a.empId, department: "" };
-        const late = a.late ? ' <span class="material-symbols-outlined" title="Late" style="font-size:16px;color:var(--warning);vertical-align:middle;">warning</span>' : "";
-        return `<tr>
-          <td><div class="flex items-center gap-3">${avatar(e, "avatar-sm")}
-            <div><div style="font-weight:600;">${fmt.escape(e.name)}</div>
-            <div class="text-muted" style="font-size:12px;">${fmt.escape(e.department)}</div></div></div></td>
-          <td>${a.checkIn ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">login</span>' + a.checkIn + late + "</span>" : "—"}</td>
-          <td>${a.checkOut ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">logout</span>' + a.checkOut + "</span>" : '<span class="text-muted">--:--</span>'}</td>
-          <td>${a.work || '<span class="text-muted">--:--</span>'}</td>
-          <td>${extraPill(a.extra)}</td>
-        </tr>`;
-      }).join("");
+      let rows;
+      if (Array.isArray(adminAtt)) {
+        rows = adminAtt.length
+          ? adminAtt.map((a) => {
+              const e = { name: a.employeeName, department: a.department };
+              const ci = fmtTime(a.checkIn), co = fmtTime(a.checkOut);
+              return `<tr>
+                <td><div class="flex items-center gap-3">${avatar(e, "avatar-sm")}
+                  <div><div style="font-weight:600;">${fmt.escape(a.employeeName)}</div>
+                  <div class="text-muted" style="font-size:12px;">${fmt.escape(a.department)}</div></div></div></td>
+                <td>${ci ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">login</span>' + ci + "</span>" : "—"}</td>
+                <td>${co ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">logout</span>' + co + "</span>" : '<span class="text-muted">--:--</span>'}</td>
+                <td>${a.workHours || '<span class="text-muted">--:--</span>'}</td>
+                <td>${extraPill(a.extraHours)}</td>
+              </tr>`;
+            }).join("")
+          : '<tr><td colspan="5"><div class="text-muted" style="padding:28px;text-align:center;">No attendance recorded yet for today.</div></td></tr>';
+      } else {
+        rows = store.attendanceToday().map((a) => {
+          const e = store.employee(a.empId) || { name: a.empId, department: "" };
+          const late = a.late ? ' <span class="material-symbols-outlined" title="Late" style="font-size:16px;color:var(--warning);vertical-align:middle;">warning</span>' : "";
+          return `<tr>
+            <td><div class="flex items-center gap-3">${avatar(e, "avatar-sm")}
+              <div><div style="font-weight:600;">${fmt.escape(e.name)}</div>
+              <div class="text-muted" style="font-size:12px;">${fmt.escape(e.department)}</div></div></div></td>
+            <td>${a.checkIn ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--success);">login</span>' + a.checkIn + late + "</span>" : "—"}</td>
+            <td>${a.checkOut ? '<span class="flex items-center gap-1"><span class="material-symbols-outlined" style="font-size:16px;color:var(--error);">logout</span>' + a.checkOut + "</span>" : '<span class="text-muted">--:--</span>'}</td>
+            <td>${a.work || '<span class="text-muted">--:--</span>'}</td>
+            <td>${extraPill(a.extra)}</td>
+          </tr>`;
+        }).join("");
+      }
       wrap.innerHTML = `<table class="table" style="min-width:720px;">
         <thead><tr><th>Employee</th><th>Check In</th><th>Check Out</th><th>Work Hours</th><th>Extra Hours</th></tr></thead>
         <tbody id="att-body">${rows}</tbody></table>`;
@@ -161,16 +180,18 @@
 
   function renderEmployee(root) {
     const checkedIn = HRMS.shell.isCheckedIn();
-    const records = synthRecords();
-    const present = records.filter((r) => r.status === "present").length;
-    const leaves = records.filter((r) => r.status === "leave").length;
-    const totalWorking = records.length;
+    const hist = empHistory;
+    const records = hist ? mapApiRecords(hist) : synthRecords();
+    const present = hist ? hist.summary.present : records.filter((r) => r.status === "present").length;
+    const leaves = hist ? hist.summary.leaves : records.filter((r) => r.status === "leave").length;
+    const totalWorking = hist ? hist.summary.totalWorking : records.length;
 
     const statusBadge = (s) => s === "present"
       ? '<span class="badge badge-success">Present</span>'
       : s === "leave" ? '<span class="badge badge-info">Leave</span>' : '<span class="badge badge-warning">Absent</span>';
 
-    const rows = records.map((r) => `
+    const rows = records.length
+      ? records.map((r) => `
       <tr>
         <td style="font-weight:600;">${fmt.date(r.date)}</td>
         <td>${r.checkIn || '<span class="text-muted">--:--</span>'}</td>
@@ -178,7 +199,8 @@
         <td>${r.work || '<span class="text-muted">--:--</span>'}</td>
         <td>${extraPill(r.extra)}</td>
         <td>${statusBadge(r.status)}</td>
-      </tr>`).join("");
+      </tr>`).join("")
+      : '<tr><td colspan="6"><div class="text-muted" style="padding:24px;text-align:center;">No attendance records this month yet — use Check In to record today.</div></td></tr>';
 
     const stat = (icon, value, label, tone) => `
       <div class="card card-pad">
@@ -258,10 +280,35 @@
     if (btn) btn.addEventListener("click", () => { const t = document.getElementById("hrms-checkin"); if (t) t.click(); });
   }
 
-  function render() {
+  let adminAtt = null;   // /attendance/all DTO array (admin day view)
+  let empHistory = null; // /attendance/me { records, summary } (employee)
+  const fmtTime = (iso) => {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d)) return null;
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  };
+  function mapApiRecords(hist) {
+    return hist.records.map((r) => ({
+      date: String(r.date).slice(0, 10),
+      status: r.status === "PRESENT" || r.status === "HALF_DAY" ? "present" : r.status === "LEAVE" ? "leave" : "absent",
+      checkIn: fmtTime(r.checkIn),
+      checkOut: fmtTime(r.checkOut),
+      work: r.workHours && r.workHours !== "--:--" ? r.workHours : null,
+      extra: r.extraHours || "--:--",
+    }));
+  }
+
+  async function render() {
     const root = document.getElementById("att-root");
     if (!root) return;
-    if (store.isAdmin()) renderAdmin(root); else renderEmployee(root);
+    if (store.isAdmin()) {
+      adminAtt = await store.apiAllAttendance();
+      renderAdmin(root);
+    } else {
+      empHistory = await store.apiMyAttendance();
+      renderEmployee(root);
+    }
   }
 
   document.addEventListener("DOMContentLoaded", render);

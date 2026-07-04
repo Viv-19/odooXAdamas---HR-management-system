@@ -48,6 +48,16 @@ class AttendanceController {
       next(error);
     }
   }
+
+  async getMyHistory(req, res, next) {
+    try {
+      const { month } = req.query; // optional YYYY-MM
+      const result = await attendanceService.getMyHistory(req.user.id, month);
+      return ApiResponse.success(res, HttpStatusCode.OK, "My Attendance History", result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AttendanceController();

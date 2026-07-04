@@ -152,19 +152,56 @@
       });
     }
 
-    // Check-in toggle
+    // Check-in / check-out — API-backed with an offline fallback.
     const checkinBtn = document.getElementById("hrms-checkin");
+    function paintCheckin(state) {
+      if (!checkinBtn) return;
+      const label = checkinBtn.querySelector("span:last-child");
+      const icon = checkinBtn.querySelector(".material-symbols-outlined");
+      checkinBtn.disabled = state === "done";
+      checkinBtn.classList.toggle("checked-in", state === "in");
+      if (state === "in") { label.textContent = "Check Out"; icon.textContent = "logout"; }
+      else if (state === "done") { label.textContent = "Checked out"; icon.textContent = "check"; }
+      else { label.textContent = "Check In"; icon.textContent = "login"; }
+    }
+    const apiReady = () => window.HRMS.api && H.utils && H.utils.isAuthed() && store.apiCheckIn;
+
     if (checkinBtn) {
-      checkinBtn.addEventListener("click", () => {
-        const now = !isCheckedIn();
-        setCheckedIn(now);
+      checkinBtn.addEventListener("click", async () => {
+        const currentlyIn = isCheckedIn();
+        if (apiReady()) {
+          try {
+            if (!currentlyIn) {
+              await store.apiCheckIn(); setCheckedIn(true); paintCheckin("in");
+              H.ui.toast("Checked in successfully", "success", 1800);
+              document.dispatchEvent(new CustomEvent("hrms:checkin", { detail: { checkedIn: true } }));
+            } else {
+              await store.apiCheckOut(); setCheckedIn(false); paintCheckin("done");
+              H.ui.toast("Checked out successfully", "success", 1800);
+              document.dispatchEvent(new CustomEvent("hrms:checkin", { detail: { checkedIn: false } }));
+            }
+          } catch (err) {
+            H.ui.toast(err.message || "Attendance update failed", "error", 2600);
+          }
+          return;
+        }
+        // Offline fallback (demo without backend)
+        const now = !currentlyIn;
+        setCheckedIn(now); paintCheckin(now ? "in" : "out");
         H.ui.toast(now ? "Checked in successfully" : "Checked out successfully", "success", 1800);
         document.dispatchEvent(new CustomEvent("hrms:checkin", { detail: { checkedIn: now } }));
-        // Re-render just the button state
-        checkinBtn.classList.toggle("checked-in", now);
-        checkinBtn.querySelector("span:last-child").textContent = now ? "Check Out" : "Check In";
-        checkinBtn.querySelector(".material-symbols-outlined").textContent = now ? "logout" : "login";
       });
+
+      // Reconcile the button with today's server-side attendance.
+      (async function syncCheckin() {
+        if (!apiReady() || !store.apiToday) return;
+        const rec = await store.apiToday();
+        if (rec === undefined) return;             // couldn't reach API — keep local state
+        if (rec && rec.checkOut) { setCheckedIn(false); paintCheckin("done"); }
+        else if (rec && rec.checkIn) { setCheckedIn(true); paintCheckin("in"); }
+        else { setCheckedIn(false); paintCheckin("out"); }
+        document.dispatchEvent(new CustomEvent("hrms:checkin", { detail: { checkedIn: isCheckedIn() } }));
+      })();
     }
 
     // Logout links -> clear session + token so the auth guard re-triggers

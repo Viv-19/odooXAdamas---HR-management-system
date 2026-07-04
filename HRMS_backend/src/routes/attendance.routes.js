@@ -12,6 +12,7 @@ router.use(authenticate);
 router.post("/check-in", attendanceController.checkIn);
 router.put("/check-out", attendanceController.checkOut);
 router.get("/today", attendanceController.getTodayStatus);
+router.get("/me", attendanceController.getMyHistory);
 
 // HR / Admin endpoints
 router.get("/all", authorize(Role.HR, Role.ADMIN), attendanceController.getAllAttendances);

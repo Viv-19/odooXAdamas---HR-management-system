@@ -177,6 +177,46 @@ class AttendanceService {
       };
     });
   }
+
+  /**
+   * Employee: own monthly attendance history + summary counts.
+   * monthStr format "YYYY-MM" (defaults to the current month).
+   */
+  async getMyHistory(userId, monthStr) {
+    let year, month;
+    if (monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
+      [year, month] = monthStr.split("-").map(Number);
+    } else {
+      const now = new Date();
+      year = now.getUTCFullYear();
+      month = now.getUTCMonth() + 1;
+    }
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const end = new Date(Date.UTC(year, month, 0));
+    end.setUTCHours(23, 59, 59, 999);
+
+    const records = await prisma.attendance.findMany({
+      where: { userId, date: { gte: start, lte: end } },
+      orderBy: { date: "desc" },
+    });
+
+    const mapped = records.map((r) => ({
+      date: r.date,
+      status: r.status,
+      checkIn: r.checkIn,
+      checkOut: r.checkOut,
+      workHours: this._calculateWorkHours(r.checkIn, r.checkOut),
+      extraHours: this._calculateExtraHours(r.checkIn, r.checkOut),
+    }));
+
+    const present = records.filter((r) => r.status === "PRESENT" || r.status === "HALF_DAY").length;
+    const leaves = records.filter((r) => r.status === "LEAVE").length;
+
+    return {
+      records: mapped,
+      summary: { present, leaves, totalWorking: records.length },
+    };
+  }
 }
 
 module.exports = new AttendanceService();

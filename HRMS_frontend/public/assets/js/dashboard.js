@@ -29,11 +29,13 @@
   }
 
   // ------------------------------ Employee -------------------------------
-  function renderEmployee(root) {
+  async function renderEmployee(root) {
+    await store.loadMe();
+    await store.loadBalance();
     const user = store.currentUser();
     const checkedIn = HRMS.shell.isCheckedIn();
     const bal = store.balances();
-    const firstName = user.name.split(" ")[0];
+    const firstName = (user.name || "").split(" ")[0];
 
     root.innerHTML = `
       <div class="page-header">
@@ -127,14 +129,13 @@
 
   // ------------------------------- Admin ---------------------------------
   async function renderAdmin(root) {
+    await store.loadMe();
+    await Promise.all([store.loadEmployees(), store.loadLeaves()]);
     const user = store.currentUser();
     const emps = store.employees();
-    
-    let att = [];
-    try {
-      const resp = await HRMS.api.get('/attendance/all');
-      if (resp.res.ok) att = resp.data.data;
-    } catch(e) { console.error("Failed to fetch attendance:", e); }
+
+    let att = await store.apiAllAttendance();
+    if (!Array.isArray(att)) att = [];
 
     const leaves = store.leaveRequests();
     const pending = leaves.filter((l) => l.status === "Pending");
@@ -187,20 +188,21 @@
             <a href="attendance.html" class="link" style="font-size:13px;">Open</a>
           </div>
           <div>
-            ${att.map((a) => {
-              const e = store.employee(a.empId) || { name: a.empId, department: "" };
-              const out = a.checkOut || "—";
+            ${att.length ? att.map((a) => {
+              const e = { name: a.employeeName, department: a.department };
+              const ci = a.checkIn ? new Date(a.checkIn).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
+              const co = a.checkOut ? new Date(a.checkOut).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—";
               return `<div class="flex items-center justify-between" style="padding:14px 20px;border-bottom:1px solid var(--surface-container-high);">
                 <div class="flex items-center gap-3">${avatar(e, "avatar-sm")}
-                  <div><div style="font-weight:600;font-size:14px;">${fmt.escape(e.name)}</div>
-                  <div class="text-muted" style="font-size:12px;">${fmt.escape(e.department)}</div></div>
+                  <div><div style="font-weight:600;font-size:14px;">${fmt.escape(a.employeeName)}</div>
+                  <div class="text-muted" style="font-size:12px;">${fmt.escape(a.department)}</div></div>
                 </div>
                 <div class="flex items-center gap-4" style="font-size:13px;">
-                  <span class="text-muted">${a.checkIn ? new Date(a.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'} – ${out !== '—' ? new Date(a.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : out}</span>
-                  ${statusBadge(a.status ? a.status.toLowerCase() : e.status)}
+                  <span class="text-muted">${ci} – ${co}</span>
+                  ${statusBadge((a.status || "").toLowerCase())}
                 </div>
               </div>`;
-            }).join("")}
+            }).join("") : emptyRow("No attendance recorded yet today")}
           </div>
         </div>
       </div>`;
@@ -264,21 +266,10 @@
     }
 
     if (store.isAdmin()) await renderAdmin(root);
-    else renderEmployee(root);
+    else await renderEmployee(root);
   }
 
   document.addEventListener("DOMContentLoaded", render);
-  document.addEventListener("hrms:checkin", async (e) => {
-    const checkedIn = e.detail.checkedIn;
-    try {
-      if (checkedIn) {
-        await HRMS.api.post('/attendance/check-in');
-      } else {
-        await HRMS.api.put('/attendance/check-out');
-      }
-    } catch(err) {
-      HRMS.ui.toast("Error syncing attendance", "error");
-    }
-    render();
-  });
+  // shell.js owns the check-in/out API call + dispatches this event; just re-render.
+  document.addEventListener("hrms:checkin", render);
 })();

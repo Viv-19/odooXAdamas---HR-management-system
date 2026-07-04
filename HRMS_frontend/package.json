@@ -1,0 +1,11 @@
+{
+  "name": "hrms-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for HRMS",
+  "scripts": {
+    "dev": "serve public -p 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+}

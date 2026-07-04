@@ -1,305 +1,69 @@
-<!-- Email verification page -->
 <!DOCTYPE html>
-<html class="h-full bg-surface" lang="en">
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700&amp;display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">try {
-            tailwind.config = {
-                darkMode: "class",
-                theme: {
-                    extend: {
-                        "colors": {
-                            "secondary-fixed-dim": "#b7c8e1",
-                            "surface-dim": "#d2d9f4",
-                            "surface-tint": "#006591",
-                            "on-surface": "#131b2e",
-                            "surface-container-lowest": "#ffffff",
-                            "inverse-primary": "#89ceff",
-                            "on-secondary-fixed": "#0b1c30",
-                            "tertiary-fixed": "#dbe4ea",
-                            "secondary": "#505f76",
-                            "on-error": "#ffffff",
-                            "primary-fixed-dim": "#89ceff",
-                            "background": "#faf8ff",
-                            "surface-container": "#eaedff",
-                            "outline": "#6e7881",
-                            "on-tertiary": "#ffffff",
-                            "secondary-fixed": "#d3e4fe",
-                            "surface": "#faf8ff",
-                            "inverse-surface": "#283044",
-                            "surface-container-highest": "#dae2fd",
-                            "on-primary-container": "#003751",
-                            "surface-container-low": "#f2f3ff",
-                            "on-error-container": "#93000a",
-                            "error": "#ba1a1a",
-                            "primary": "#006591",
-                            "on-secondary": "#ffffff",
-                            "error-container": "#ffdad6",
-                            "outline-variant": "#bec8d2",
-                            "surface-container-high": "#e2e7ff",
-                            "inverse-on-surface": "#eef0ff",
-                            "on-tertiary-fixed": "#141d21",
-                            "tertiary": "#576065",
-                            "on-primary-fixed": "#001e2f",
-                            "on-background": "#131b2e",
-                            "on-secondary-container": "#54647a",
-                            "secondary-container": "#d0e1fb",
-                            "tertiary-container": "#949da3",
-                            "primary-fixed": "#c9e6ff",
-                            "surface-bright": "#faf8ff",
-                            "on-secondary-fixed-variant": "#38485d",
-                            "on-primary": "#ffffff",
-                            "on-primary-fixed-variant": "#004c6e",
-                            "primary-container": "#0ea5e9",
-                            "surface-variant": "#dae2fd",
-                            "on-surface-variant": "#3e4850",
-                            "on-tertiary-container": "#2c3539",
-                            "tertiary-fixed-dim": "#bfc8ce",
-                            "on-tertiary-fixed-variant": "#3f484d"
-                        },
-                        "borderRadius": {
-                            "DEFAULT": "0.25rem",
-                            "lg": "0.5rem",
-                            "xl": "0.75rem",
-                            "full": "9999px"
-                        },
-                        "spacing": {
-                            "lg": "24px",
-                            "gutter": "24px",
-                            "margin-mobile": "16px",
-                            "base": "4px",
-                            "xs": "4px",
-                            "sm": "8px",
-                            "margin-desktop": "48px",
-                            "xl": "40px",
-                            "md": "16px"
-                        },
-                        "fontFamily": {
-                            "headline-lg": [
-                                "Manrope"
-                            ],
-                            "body-lg": [
-                                "Inter"
-                            ],
-                            "body-md": [
-                                "Inter"
-                            ],
-                            "headline-xl-mobile": [
-                                "Manrope"
-                            ],
-                            "label-sm": [
-                                "Inter"
-                            ],
-                            "headline-xl": [
-                                "Manrope"
-                            ],
-                            "label-md": [
-                                "Inter"
-                            ],
-                            "headline-md": [
-                                "Manrope"
-                            ],
-                            "body-sm": [
-                                "Inter"
-                            ]
-                        },
-                        "fontSize": {
-                            "headline-lg": [
-                                "32px",
-                                {
-                                    "lineHeight": "40px",
-                                    "letterSpacing": "-0.01em",
-                                    "fontWeight": "600"
-                                }
-                            ],
-                            "body-lg": [
-                                "18px",
-                                {
-                                    "lineHeight": "28px",
-                                    "fontWeight": "400"
-                                }
-                            ],
-                            "body-md": [
-                                "16px",
-                                {
-                                    "lineHeight": "24px",
-                                    "fontWeight": "400"
-                                }
-                            ],
-                            "headline-xl-mobile": [
-                                "30px",
-                                {
-                                    "lineHeight": "36px",
-                                    "letterSpacing": "-0.01em",
-                                    "fontWeight": "700"
-                                }
-                            ],
-                            "label-sm": [
-                                "12px",
-                                {
-                                    "lineHeight": "16px",
-                                    "letterSpacing": "0.02em",
-                                    "fontWeight": "500"
-                                }
-                            ],
-                            "headline-xl": [
-                                "40px",
-                                {
-                                    "lineHeight": "48px",
-                                    "letterSpacing": "-0.02em",
-                                    "fontWeight": "700"
-                                }
-                            ],
-                            "label-md": [
-                                "14px",
-                                {
-                                    "lineHeight": "16px",
-                                    "letterSpacing": "0.01em",
-                                    "fontWeight": "600"
-                                }
-                            ],
-                            "headline-md": [
-                                "24px",
-                                {
-                                    "lineHeight": "32px",
-                                    "fontWeight": "600"
-                                }
-                            ],
-                            "body-sm": [
-                                "14px",
-                                {
-                                    "lineHeight": "20px",
-                                    "fontWeight": "400"
-                                }
-                            ]
-                        }
-                    },
-                },
-            }
-        } catch (_e) { }</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Email — HRMS</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <style>
+    .otp-box { width:52px; height:60px; text-align:center; font-size:24px; font-weight:700; font-family:var(--font-heading);
+      border:2px solid var(--outline-variant); border-radius:.6rem; color:var(--on-surface); transition:border-color .15s, box-shadow .15s; }
+    .otp-box:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,.18); }
+    @media (max-width:420px){ .otp-box{ width:44px; height:54px; font-size:20px; } }
+  </style>
 </head>
+<body class="min-h-screen flex items-center justify-center p-4"
+      style="background:radial-gradient(1200px 600px at 50% -10%, #e0f2fe 0%, var(--background) 55%);">
+  <main class="w-full max-w-[480px]">
+    <a href="signin.html" class="flex items-center justify-center gap-3 mb-8">
+      <span style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-container));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(14,165,233,.35);">
+        <span class="material-symbols-outlined icon-fill" style="color:#fff;">corporate_fare</span>
+      </span>
+      <span class="h-lg" style="font-size:26px;">HRMS</span>
+    </a>
 
-<body class="h-full font-body-md text-on-surface bg-surface-container-low flex items-center justify-center p-4">
-    <!-- Transactional Screen - No Nav Bars Rendered -->
-    <main class="w-full max-w-[480px]">
-        <!-- Brand Header -->
-        <div class="flex justify-center mb-8">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shadow-sm">
-                    <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">
-                        domain
-                    </span>
-                </div>
-                <h1 class="font-headline-md text-headline-md font-bold text-on-surface tracking-tight">HRMS</h1>
-            </div>
-        </div>
-        <!-- Main Card Container -->
-        <div
-            class="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-surface-variant p-8 md:p-10 text-center relative overflow-hidden">
-            <!-- Decorative Background Element -->
-            <div
-                class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-container via-primary to-inverse-primary">
-            </div>
-            <!-- Email Icon Graphic -->
-            <div
-                class="mx-auto w-24 h-24 rounded-full bg-surface-container flex items-center justify-center mb-6 border-4 border-surface-container-lowest shadow-sm relative">
-                <span class="material-symbols-outlined text-4xl text-primary-container"
-                    style="font-variation-settings: 'FILL' 1;">
-                    mark_email_read
-                </span>
-                <!-- Decorative floating dot -->
-                <div
-                    class="absolute top-2 right-2 w-4 h-4 rounded-full bg-primary-fixed border-2 border-surface-container-lowest">
-                </div>
-            </div>
-            <!-- Content Area -->
-            <h2
-                class="font-headline-xl-mobile md:font-headline-lg text-headline-xl-mobile md:text-headline-lg text-on-surface mb-4">
-                Verify Your Email
-            </h2>
-            <p class="font-body-lg text-body-lg text-on-surface-variant mb-8 px-4">We've sent a 6-digit OTP to your
-                email address. Please enter the code below to activate your HRMS account.</p>
-            <!-- Actions Area -->
-            <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-6">
-                    <div class="flex justify-between gap-2 px-2"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"><input
-                            class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"></div>
-                        <p id="errorMessage" class="text-red-500 text-sm hidden font-medium text-center"></p>
-                        <button
-                        class="w-full flex items-center justify-center gap-2 bg-primary-container text-white font-label-md text-label-md px-6 py-4 rounded-lg hover:bg-primary transition-colors duration-200 shadow-sm focus:ring-2 focus:ring-primary-container/20 focus:outline-none">Verify
-                        OTP</button>
-                </div>
-                <div class="mt-6 flex flex-col gap-2">
-                </div>
-            </div>
-        </div>
-    </main>
-    <script>
-        document.querySelector('button').addEventListener('click', async () => {
-            const inputs = document.querySelectorAll('input[type="text"]');
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.classList.add('hidden');
-            
-            let otp = '';
-            inputs.forEach(input => otp += input.value);
-            
-            const email = localStorage.getItem('verifyEmail');
-            if (!email) {
-                errorEl.textContent = "Email not found. Please signup again.";
-                errorEl.classList.remove('hidden');
-                return;
-            }
+    <div class="card animate-in text-center" style="padding:32px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--primary-container),var(--primary),var(--primary-fixed-dim));"></div>
 
-            if (otp.length !== 6) {
-                errorEl.textContent = "Please enter all 6 digits";
-                errorEl.classList.remove('hidden');
-                return;
-            }
+      <div class="mx-auto flex items-center justify-center" style="width:88px;height:88px;border-radius:9999px;background:var(--primary-light);margin:12px auto 20px;">
+        <span class="material-symbols-outlined icon-fill" style="font-size:44px;color:var(--primary-hover);">mark_email_read</span>
+      </div>
 
-            try {
-                const res = await fetch('http://localhost:5000/api/v1/auth/verify-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, otp })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    window.location.href = 'signin.html';
-                } else {
-                    let errorMsg = data.message || "Verification failed";
-                    if (data.errors && data.errors.length > 0) {
-                        errorMsg = data.errors[0].replace(/"/g, '');
-                    }
-                    errorEl.textContent = errorMsg;
-                    errorEl.classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error(err);
-                errorEl.textContent = "Error connecting to backend";
-                errorEl.classList.remove('hidden');
-            }
-        });
-    </script>
+      <h1 class="h-lg mb-2">Verify your email</h1>
+      <p class="text-muted mb-1" style="font-size:15px;">We've sent a 6-digit code to</p>
+      <p class="mb-6" style="font-weight:600;font-size:15px;" data-email-display>your email address</p>
+
+      <div class="flex justify-center gap-2 mb-6">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 1">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 2">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 3">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 4">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 5">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 6">
+      </div>
+
+      <button id="verify-btn" class="btn btn-primary" style="width:100%;" disabled>Verify Email</button>
+
+      <p class="text-muted mt-5" style="font-size:14px;">
+        Didn't receive it?
+        <button id="resend-btn" class="link" style="background:none;border:none;cursor:pointer;font-size:14px;">Resend code<span id="resend-countdown"></span></button>
+      </p>
+      <a class="inline-flex items-center gap-1 link mt-4" style="font-size:13px;" href="signup.html">
+        <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span> Back to sign up
+      </a>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/verify.js"></script>
 </body>
-
 </html>

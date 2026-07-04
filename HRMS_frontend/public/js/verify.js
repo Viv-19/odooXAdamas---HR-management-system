@@ -44,10 +44,33 @@
     boxes[0].focus();
 
     if (verifyBtn) {
-      verifyBtn.addEventListener("click", () => {
+      verifyBtn.addEventListener("click", async () => {
         if (value().length !== boxes.length) return;
-        HRMS.ui.toast("Email verified successfully", "success", 1200);
-        setTimeout(() => (location.href = "dashboard.html"), 800);
+        const email = new URLSearchParams(window.location.search).get('email');
+        const errorEl = document.getElementById('error-msg');
+        if (errorEl) errorEl.classList.add('hidden');
+
+        try {
+            const { res, data } = await HRMS.api.post('/auth/verify-otp', { email, otp: value() });
+            if (res.ok) {
+                window.location.href = 'dashboard.html';
+            } else {
+                let errorMsg = data.message || "Verification failed";
+                if (data.errors && data.errors.length > 0) errorMsg = data.errors[0].replace(/"/g, '');
+                if (errorEl) {
+                    errorEl.textContent = errorMsg;
+                    errorEl.classList.remove('hidden');
+                } else {
+                    HRMS.ui.toast(errorMsg, "error", 2000);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            if (errorEl) {
+                errorEl.textContent = "Error connecting to backend";
+                errorEl.classList.remove('hidden');
+            }
+        }
       });
     }
 

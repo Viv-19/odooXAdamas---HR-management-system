@@ -126,10 +126,16 @@
   }
 
   // ------------------------------- Admin ---------------------------------
-  function renderAdmin(root) {
+  async function renderAdmin(root) {
     const user = store.currentUser();
     const emps = store.employees();
-    const att = store.attendanceToday();
+    
+    let att = [];
+    try {
+      const resp = await HRMS.api.get('/attendance/all');
+      if (resp.res.ok) att = resp.data.data;
+    } catch(e) { console.error("Failed to fetch attendance:", e); }
+
     const leaves = store.leaveRequests();
     const pending = leaves.filter((l) => l.status === "Pending");
     const presentCount = emps.filter((e) => e.status === "present").length;
@@ -190,8 +196,8 @@
                   <div class="text-muted" style="font-size:12px;">${fmt.escape(e.department)}</div></div>
                 </div>
                 <div class="flex items-center gap-4" style="font-size:13px;">
-                  <span class="text-muted">${a.checkIn}${a.late ? ' <span class="material-symbols-outlined" style="font-size:14px;color:var(--warning);vertical-align:middle;">warning</span>' : ""} – ${out}</span>
-                  ${statusBadge(e.status)}
+                  <span class="text-muted">${a.checkIn ? new Date(a.checkIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'} – ${out !== '—' ? new Date(a.checkOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : out}</span>
+                  ${statusBadge(a.status ? a.status.toLowerCase() : e.status)}
                 </div>
               </div>`;
             }).join("")}
@@ -241,13 +247,38 @@
   }
 
   // ------------------------------- Boot ----------------------------------
-  function render() {
+  async function render() {
     const root = document.getElementById("dash-root");
     if (!root) return;
-    if (store.isAdmin()) renderAdmin(root);
+
+    // Check actual attendance status from backend for UI consistency
+    if (!store.isAdmin()) {
+        try {
+            const resp = await HRMS.api.get('/attendance/today');
+            if (resp.res.ok && resp.data.data && resp.data.data.checkIn) {
+                HRMS.shell.setCheckedIn(true);
+            } else {
+                HRMS.shell.setCheckedIn(false);
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    if (store.isAdmin()) await renderAdmin(root);
     else renderEmployee(root);
   }
 
   document.addEventListener("DOMContentLoaded", render);
-  document.addEventListener("hrms:checkin", render);
+  document.addEventListener("hrms:checkin", async (e) => {
+    const checkedIn = e.detail.checkedIn;
+    try {
+      if (checkedIn) {
+        await HRMS.api.post('/attendance/check-in');
+      } else {
+        await HRMS.api.put('/attendance/check-out');
+      }
+    } catch(err) {
+      HRMS.ui.toast("Error syncing attendance", "error");
+    }
+    render();
+  });
 })();

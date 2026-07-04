@@ -35,8 +35,14 @@ class AuthService {
         data: {
           employeeId,
           email,
-          password: hashedPassword, // Match new schema field name
+          password: hashedPassword,
           role: role || "EMPLOYEE",
+          profile: {
+            create: {
+              firstName: "User",
+              lastName: employeeId, // Using ID as placeholder until they edit it
+            }
+          }
         },
       });
 

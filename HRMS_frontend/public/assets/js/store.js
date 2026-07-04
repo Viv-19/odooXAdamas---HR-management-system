@@ -146,9 +146,23 @@
     all: () => data,
     employees: () => data.employees,
     employee: (id) => data.employees.find((e) => e.id === id),
-    currentUser: () => api.employee(getSession().empId) || data.employees[0],
-    isAdmin: () => getSession().role === "admin",
-    role: () => getSession().role,
+    currentUser: () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('hrms_user'));
+        if (u) {
+          return { id: u.employeeId, name: u.employeeId, department: "N/A", role: u.role };
+        }
+      } catch (e) {}
+      return api.employee(getSession().empId) || data.employees[0];
+    },
+    isAdmin: () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('hrms_user'));
+        if (u) return u.role === "ADMIN" || u.role === "HR";
+      } catch (e) {}
+      return getSession().role === "admin";
+    },
+    role: () => api.isAdmin() ? "admin" : "employee",
     attendanceToday: () => data.attendanceToday,
     leaveRequests: () => data.leaveRequests,
     leaveForEmployee: (id) => data.leaveRequests.filter((l) => l.empId === id),

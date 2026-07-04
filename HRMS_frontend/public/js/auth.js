@@ -74,26 +74,41 @@
     signin(form) {
       const id = form.loginId, pw = form.password;
       [id, pw].forEach((i) => i && i.addEventListener("input", () => clearError(i)));
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         let ok = true;
         if (!id.value.trim()) { setError(id, "Enter your email"); ok = false; }
         if (!pw.value) { setError(pw, "Enter your password"); ok = false; }
         if (!ok) return;
-        // Role is chosen here (mutual decision) — it drives which view you land on.
-        const picked = form.querySelector('input[name="role"]:checked');
-        const role = picked && picked.value === "hr" ? "admin" : "employee";
-        HRMS.utils.setToken("demo-" + Date.now());
-        HRMS.store.setRole(role);
-        HRMS.ui.toast("Signed in as " + (role === "admin" ? "HR Admin" : "Employee"), "success", 1200);
-        setTimeout(() => (location.href = "dashboard.html"), 700);
+
+        try {
+          const { res, data } = await HRMS.api.post('/auth/signin', { email: id.value, password: pw.value });
+          if (res.ok) {
+            if (window.HRMS && window.HRMS.utils) window.HRMS.utils.setToken(data.data.token);
+            else localStorage.setItem('hrms_token_v1', data.data.token);
+            
+            localStorage.setItem('hrms_user', JSON.stringify(data.data.user));
+            HRMS.store.setRole(data.data.user.role.toLowerCase());
+            HRMS.ui.toast("Signed in successfully", "success", 1200);
+            setTimeout(() => (location.href = "dashboard.html"), 700);
+          } else {
+            let errorMsg = data.message || "Login failed";
+            if (data.errors && data.errors.length > 0) errorMsg = data.errors[0].replace(/"/g, '');
+            setError(pw, errorMsg);
+            if (window.HRMS && window.HRMS.ui) window.HRMS.ui.toast(errorMsg, "error", 3000);
+          }
+        } catch (err) {
+          console.error("Signin Exception:", err);
+          setError(pw, "Network error connecting to backend.");
+          if (window.HRMS && window.HRMS.ui) window.HRMS.ui.toast("Network error. Please try again.", "error", 3000);
+        }
       });
     },
 
     signup(form) {
       const fields = ["employeeId", "email", "password", "confirmPassword"].map((n) => form[n]);
       fields.forEach((i) => i && i.addEventListener("input", () => clearError(i)));
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const [empId, email, pw, cpw] = fields;
         let ok = true;
@@ -102,8 +117,29 @@
         if (!strongPw(pw.value)) { setError(pw, "Min 8 chars incl. a special character"); ok = false; }
         if (cpw.value !== pw.value) { setError(cpw, "Passwords do not match"); ok = false; }
         if (!ok) return;
-        HRMS.ui.toast("Account created — verify your email", "success", 1400);
-        setTimeout(() => (location.href = "verify.html?email=" + encodeURIComponent(email.value)), 800);
+
+        const rolePicked = form.querySelector('input[name="role"]:checked');
+        const role = rolePicked && rolePicked.value === "hr" ? "ADMIN" : "EMPLOYEE";
+
+        try {
+          const { res, data } = await HRMS.api.post('/auth/signup', { 
+            employeeId: empId.value, 
+            email: email.value, 
+            password: pw.value, 
+            confirmPassword: cpw.value, 
+            role 
+          });
+          if (res.ok) {
+            HRMS.ui.toast("Account created — verify your email", "success", 1400);
+            setTimeout(() => (location.href = "verify.html?email=" + encodeURIComponent(email.value)), 800);
+          } else {
+            let errorMsg = data.message || "Signup failed";
+            if (data.errors && data.errors.length > 0) errorMsg = data.errors[0].replace(/"/g, '');
+            setError(email, errorMsg);
+          }
+        } catch (err) {
+          setError(email, "Network error connecting to backend.");
+        }
       });
     },
 

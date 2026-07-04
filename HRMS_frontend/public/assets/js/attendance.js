@@ -179,7 +179,11 @@
   }
 
   function renderEmployee(root) {
-    const checkedIn = HRMS.shell.isCheckedIn();
+    const rec = todayRec;
+    const state = rec && rec.checkOut ? "done" : rec && rec.checkIn ? "in" : "out";
+    const checkedIn = state === "in";
+    const ciTime = rec && rec.checkIn ? fmtTime(rec.checkIn) : null;
+    const coTime = rec && rec.checkOut ? fmtTime(rec.checkOut) : null;
     const hist = empHistory;
     const records = hist ? mapApiRecords(hist) : synthRecords();
     const present = hist ? hist.summary.present : records.filter((r) => r.status === "present").length;
@@ -221,26 +225,26 @@
         <div style="height:6px;background:linear-gradient(90deg,var(--primary-container),var(--primary),var(--primary-fixed-dim));"></div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
           <div class="lg:col-span-2 flex flex-col items-center text-center" style="padding:32px;">
-            <div class="flex items-center justify-center mb-3" style="width:80px;height:80px;border-radius:9999px;background:${checkedIn ? "var(--success-container)" : "var(--surface-container)"};">
-              <span class="material-symbols-outlined icon-fill" style="font-size:40px;color:${checkedIn ? "var(--success)" : "var(--on-surface-variant)"};">${checkedIn ? "how_to_reg" : "schedule"}</span>
+            <div class="flex items-center justify-center mb-3" style="width:80px;height:80px;border-radius:9999px;background:${state === "out" ? "var(--surface-container)" : "var(--success-container)"};">
+              <span class="material-symbols-outlined icon-fill" style="font-size:40px;color:${state === "out" ? "var(--on-surface-variant)" : "var(--success)"};">${state === "out" ? "schedule" : "how_to_reg"}</span>
             </div>
-            <h2 class="h-lg mb-1">${checkedIn ? "Checked In" : "Not Checked In"}</h2>
-            <p class="text-muted mb-4" style="font-size:14px;">${checkedIn ? "Your attendance for today has been recorded." : "Check in to record today's attendance."}</p>
+            <h2 class="h-lg mb-1">${state === "in" ? "Checked In" : state === "done" ? "Checked Out" : "Not Checked In"}</h2>
+            <p class="text-muted mb-4" style="font-size:14px;">${state === "in" ? "You're checked in for today." : state === "done" ? "Your attendance for today is complete." : "Check in to record today's attendance."}</p>
             <div class="card" style="padding:14px 28px;box-shadow:none;background:var(--surface-container-low);margin-bottom:18px;">
               <div class="label" style="text-align:center;">Current Time</div>
               <div class="h-xl" style="font-size:32px;color:var(--primary-hover);text-align:center;" id="att-clock">--:--</div>
               <div class="flex items-center justify-center gap-1 text-muted" style="font-size:12px;"><span class="material-symbols-outlined" style="font-size:14px;">location_on</span>Head Office · Building A</div>
             </div>
-            <button id="att-checkin" class="btn ${checkedIn ? "btn-outline" : "btn-primary"}">
-              <span class="material-symbols-outlined">${checkedIn ? "logout" : "login"}</span>${checkedIn ? "Check Out Now" : "Check In Now"}
+            <button id="att-checkin" class="btn ${state === "in" ? "btn-outline" : "btn-primary"}" ${state === "done" ? "disabled" : ""}>
+              <span class="material-symbols-outlined">${state === "in" ? "logout" : state === "done" ? "check" : "login"}</span>${state === "in" ? "Check Out Now" : state === "done" ? "Completed for Today" : "Check In Now"}
             </button>
           </div>
           <div style="padding:24px;border-left:1px solid var(--surface-variant);background:var(--surface-container-low);">
             <div class="subcard-title" style="font-family:var(--font-heading);font-weight:600;font-size:14px;margin-bottom:14px;">Today's Timeline</div>
             <div class="flex flex-col gap-4" style="font-size:13px;">
-              <div class="flex items-center gap-3"><span class="material-symbols-outlined icon-fill" style="color:var(--success);">check_circle</span><div><div style="font-weight:600;">Check-In</div><div class="text-muted">08:55 AM</div></div></div>
-              <div class="flex items-center gap-3" style="opacity:${checkedIn ? 1 : .4};"><span class="material-symbols-outlined" style="color:var(--primary-hover);">radio_button_checked</span><div><div style="font-weight:600;">At Work</div><div class="text-muted">In progress</div></div></div>
-              <div class="flex items-center gap-3" style="opacity:.4;"><span class="material-symbols-outlined">radio_button_unchecked</span><div><div style="font-weight:600;">Check-Out</div><div class="text-muted">Pending</div></div></div>
+              <div class="flex items-center gap-3" style="opacity:${ciTime ? 1 : 0.4};"><span class="material-symbols-outlined ${ciTime ? "icon-fill" : ""}" style="color:${ciTime ? "var(--success)" : "var(--outline-variant)"};">${ciTime ? "check_circle" : "radio_button_unchecked"}</span><div><div style="font-weight:600;">Check-In</div><div class="text-muted">${ciTime || "Pending"}</div></div></div>
+              <div class="flex items-center gap-3" style="opacity:${state === "in" ? 1 : 0.4};"><span class="material-symbols-outlined" style="color:var(--primary-hover);">radio_button_checked</span><div><div style="font-weight:600;">At Work</div><div class="text-muted">${state === "in" ? "In progress" : state === "done" ? "Ended" : "—"}</div></div></div>
+              <div class="flex items-center gap-3" style="opacity:${coTime ? 1 : 0.4};"><span class="material-symbols-outlined ${coTime ? "icon-fill" : ""}" style="color:${coTime ? "var(--error)" : "var(--outline-variant)"};">${coTime ? "check_circle" : "radio_button_unchecked"}</span><div><div style="font-weight:600;">Check-Out</div><div class="text-muted">${coTime || "Pending"}</div></div></div>
             </div>
           </div>
         </div>
@@ -277,11 +281,20 @@
     tick(); setInterval(tick, 30000);
 
     const btn = document.getElementById("att-checkin");
-    if (btn) btn.addEventListener("click", () => { const t = document.getElementById("hrms-checkin"); if (t) t.click(); });
+    if (btn) btn.addEventListener("click", async () => {
+      if (state === "done") return;
+      btn.disabled = true;
+      try {
+        if (state === "in") { await store.apiCheckOut(); HRMS.shell.setCheckedIn(false); toast("Checked out successfully", "success", 1600); }
+        else { await store.apiCheckIn(); HRMS.shell.setCheckedIn(true); toast("Checked in successfully", "success", 1600); }
+        await render();
+      } catch (err) { btn.disabled = false; toast(err.message || "Attendance update failed", "error", 2500); }
+    });
   }
 
   let adminAtt = null;   // /attendance/all DTO array (admin day view)
   let empHistory = null; // /attendance/me { records, summary } (employee)
+  let todayRec = null;   // /attendance/today record (employee hero + timeline)
   const fmtTime = (iso) => {
     if (!iso) return null;
     const d = new Date(iso);
@@ -306,7 +319,9 @@
       adminAtt = await store.apiAllAttendance();
       renderAdmin(root);
     } else {
-      empHistory = await store.apiMyAttendance();
+      const [h, t] = await Promise.all([store.apiMyAttendance(), store.apiToday()]);
+      empHistory = h;
+      todayRec = t && typeof t === "object" ? t : null;
       renderEmployee(root);
     }
   }

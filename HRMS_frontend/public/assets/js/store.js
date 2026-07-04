@@ -308,6 +308,25 @@
       if (!r.res.ok) throw new Error((r.data && r.data.message) || "Could not allocate");
       return r.data.data;
     },
+
+    // ---- Payroll API -----------------------------------------------------
+    async apiPayrollMe() {
+      if (!window.HRMS.api) return null;
+      try { const r = await HRMS.api.get("/payroll/me"); return r.res.ok ? r.data.data : null; } catch (_e) { return null; }
+    },
+    async apiPayrollList() {
+      if (!window.HRMS.api) return null;
+      try { const r = await HRMS.api.get("/payroll"); return r.res.ok ? r.data.data : null; } catch (_e) { return null; }
+    },
+    async apiPayrollGet(id) {
+      if (!window.HRMS.api) return null;
+      try { const r = await HRMS.api.get("/payroll/" + id); return r.res.ok ? r.data.data : null; } catch (_e) { return null; }
+    },
+    async apiPayrollUpdate(id, structure) {
+      const r = await HRMS.api.put("/payroll/" + id, { structure });
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Could not update salary");
+      return r.data.data;
+    },
   };
 
   window.HRMS = window.HRMS || {};

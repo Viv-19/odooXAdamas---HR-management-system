@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave &amp; Time-Off — HRMS</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .cal-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:6px; }
+    .cal-dow { text-align:center;font-size:11px;font-weight:600;color:var(--on-surface-variant);padding:4px 0;text-transform:uppercase;letter-spacing:.04em; }
+    .cal-cell { aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;font-size:13px;position:relative;border:1px solid transparent; }
+    .cal-cell.muted { color:var(--outline-variant); }
+    .cal-cell.today { border-color:var(--primary);font-weight:700;color:var(--primary-hover); }
+    .cal-cell.paid { background:var(--primary-light);color:var(--primary-hover);font-weight:600; }
+    .cal-cell.sick { background:var(--error-container);color:#93000a;font-weight:600; }
+    .cal-cell.holiday { background:var(--warning-container);color:#92400e;font-weight:600; }
+    .legend-dot { width:10px;height:10px;border-radius:3px;display:inline-block; }
+  </style>
+</head>
+<body>
+  <div class="app-layout" id="hrms-app">
+    <div class="app-main">
+      <header class="app-topbar" id="hrms-topbar"></header>
+      <main class="app-content">
+        <div id="leave-root"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script src="assets/js/leave.js"></script>
+  <script>HRMS.shell.mount({ active: "leave" });</script>
+</body>
+</html>

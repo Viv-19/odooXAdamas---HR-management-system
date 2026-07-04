@@ -180,6 +180,17 @@
       save(data);
       return emp;
     },
+    removeEmployee(id) {
+      const i = data.employees.findIndex((e) => e.id === id);
+      if (i > -1) {
+        data.employees.splice(i, 1);
+        // Also drop that employee's leave requests.
+        data.leaveRequests = data.leaveRequests.filter((l) => l.empId !== id);
+        save(data);
+        return true;
+      }
+      return false;
+    },
   };
 
   window.HRMS = window.HRMS || {};

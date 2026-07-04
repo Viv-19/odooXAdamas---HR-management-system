@@ -243,7 +243,9 @@
                             class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
                             maxlength="1" type="text"><input
                             class="w-12 h-14 text-center text-xl font-bold border-2 border-outline-variant rounded-lg focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 outline-none transition-all"
-                            maxlength="1" type="text"></div><button
+                            maxlength="1" type="text"></div>
+                        <p id="errorMessage" class="text-red-500 text-sm hidden font-medium text-center"></p>
+                        <button
                         class="w-full flex items-center justify-center gap-2 bg-primary-container text-white font-label-md text-label-md px-6 py-4 rounded-lg hover:bg-primary transition-colors duration-200 shadow-sm focus:ring-2 focus:ring-primary-container/20 focus:outline-none">Verify
                         OTP</button>
                 </div>
@@ -252,6 +254,48 @@
             </div>
         </div>
     </main>
+    <script>
+        document.querySelector('button').addEventListener('click', async () => {
+            const inputs = document.querySelectorAll('input[type="text"]');
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.classList.add('hidden');
+            
+            let otp = '';
+            inputs.forEach(input => otp += input.value);
+            
+            const email = localStorage.getItem('verifyEmail');
+            if (!email) {
+                errorEl.textContent = "Email not found. Please signup again.";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (otp.length !== 6) {
+                errorEl.textContent = "Please enter all 6 digits";
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const res = await fetch('http://localhost:5000/api/v1/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.location.href = 'signin.html';
+                } else {
+                    errorEl.textContent = data.message || "Verification failed";
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = "Error connecting to backend";
+                errorEl.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 
 </html>

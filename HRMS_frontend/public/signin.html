@@ -172,6 +172,12 @@
     },
   }
 </script>
+<style>
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+        display: none;
+    }
+</style>
 </head>
 <body class="bg-background min-h-screen font-body-md text-on-surface flex flex-col">
 <!-- Top Navigation (Suppressed Links for Auth) -->
@@ -192,7 +198,7 @@
 <p class="font-body-md text-body-md text-on-surface-variant">Please sign in to continue</p>
 </div>
 <!-- Sign In Form -->
-<form class="w-full flex flex-col gap-md" onsubmit="event.preventDefault();">
+<form class="w-full flex flex-col gap-md" id="signinForm">
 <!-- Login ID / Email -->
 <div class="flex flex-col gap-base">
 <label class="font-label-md text-label-md text-on-surface uppercase" for="loginId">Login ID / Email</label>
@@ -216,8 +222,10 @@
 <input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/20 bg-surface-container-lowest cursor-pointer" type="checkbox"/>
 <span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
 </label>
-<a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium transition-colors" href="#">Forgot Password?</a>
+<a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium transition-colors" href="forgot-password.html">Forgot Password?</a>
 </div>
+<!-- Error Message -->
+<p id="errorMessage" class="text-red-500 text-sm hidden mb-2 font-medium"></p>
 <!-- Submit Button -->
 <button class="w-full h-[48px] mt-sm bg-primary text-on-primary font-label-md text-label-md uppercase rounded-lg hover:bg-primary-container transition-colors active:scale-[0.98] shadow-sm flex items-center justify-center" type="submit">
                     Sign In
@@ -227,7 +235,7 @@
 <div class="mt-lg text-center">
 <p class="font-body-sm text-body-sm text-on-surface-variant">
                     Don't have an account? 
-                    <a class="text-primary hover:text-primary-container font-medium transition-colors" href="#">Sign Up</a>
+                    <a class="text-primary hover:text-primary-container font-medium transition-colors" href="signup.html">Sign Up</a>
 </p>
 </div>
 </div>
@@ -245,5 +253,35 @@
                 visibilityIcon.textContent = 'visibility_off';
             }
         }
+    </script>
+    <script>
+        document.getElementById('signinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginId').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('errorMessage');
+            
+            errorEl.classList.add('hidden');
+
+            try {
+                const res = await fetch('http://localhost:5000/api/v1/auth/signin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('token', data.data.token);
+                    // window.location.href = 'dashboard.html';
+                } else {
+                    errorEl.textContent = data.message || "Login failed";
+                    errorEl.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = "Error connecting to backend";
+                errorEl.classList.remove('hidden');
+            }
+        });
     </script>
 </body></html>

@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  EMPLOYEE
+  HR
+  ADMIN
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  HALFDAY
+  LEAVE
+}
+
+enum LeaveType {
+  PAID
+  SICK
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(cuid())
+  employeeId      String   @unique
+  email           String   @unique
+  passwordHash    String
+  role            Role     @default(EMPLOYEE)
+  isEmailVerified Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  emailVerifications EmailVerification[]
+  profile            EmployeeProfile?
+  attendances        Attendance[]
+  leaveRequests      LeaveRequest[]       @relation("EmployeeLeaves")
+  reviewedLeaves     LeaveRequest[]       @relation("ReviewerLeaves")
+  payroll            Payroll?
+
+  @@map("users")
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
+}
+
+model EmployeeProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  firstName     String
+  lastName      String
+  phone         String?
+  address       String?
+  profilePicUrl String?
+  departmentId  String?
+  designation   String?
+  dateOfJoining DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@map("employee_profiles")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  employees EmployeeProfile[]
+
+  @@map("departments")
+}
+
+model Attendance {
+  id       String           @id @default(cuid())
+  userId   String
+  date     DateTime
+  checkIn  DateTime?
+  checkOut DateTime?
+  status   AttendanceStatus @default(PRESENT)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("attendances")
+}
+
+model LeaveRequest {
+  id            String      @id @default(cuid())
+  userId        String
+  type          LeaveType
+  startDate     DateTime
+  endDate       DateTime
+  remarks       String?
+  status        LeaveStatus @default(PENDING)
+  reviewedById  String?
+  reviewComment String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  user       User  @relation("EmployeeLeaves", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("ReviewerLeaves", fields: [reviewedById], references: [id])
+
+  @@map("leave_requests")
+}
+
+model Payroll {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  basicSalary Float   @default(0)
+  allowances  Float   @default(0)
+  deductions  Float   @default(0)
+  netSalary   Float   @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payrolls")
+}

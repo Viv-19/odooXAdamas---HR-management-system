@@ -14,6 +14,7 @@ router.get("/me", userController.me);
 router.get("/", authorize(Role.HR, Role.ADMIN), userController.list);
 router.post("/", authorize(Role.HR, Role.ADMIN), userController.create);
 router.get("/:id", authorize(Role.HR, Role.ADMIN), userController.getOne);
+router.put("/:id/role", authorize(Role.HR, Role.ADMIN), userController.setRole);
 router.put("/:id", authorize(Role.HR, Role.ADMIN), userController.update);
 router.patch("/:id", authorize(Role.HR, Role.ADMIN), userController.update);
 router.delete("/:id", authorize(Role.HR, Role.ADMIN), userController.remove);

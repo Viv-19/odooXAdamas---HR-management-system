@@ -56,6 +56,15 @@ class UserController {
       next(error);
     }
   }
+
+  async setRole(req, res, next) {
+    try {
+      const employee = await userService.setRole(req.params.id, req.body.role);
+      return ApiResponse.success(res, HttpStatusCode.OK, "Role updated", employee);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new UserController();

@@ -243,6 +243,11 @@
       if (!resp.res.ok) throw new Error((resp.data && resp.data.message) || "Delete failed");
       return true;
     },
+    async apiSetRole(id, role) {
+      const resp = await HRMS.api.put("/employees/" + id + "/role", { role });
+      if (!resp.res.ok) throw new Error((resp.data && resp.data.message) || "Role update failed");
+      return resp.data.data;
+    },
   };
 
   window.HRMS = window.HRMS || {};

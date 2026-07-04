@@ -221,6 +221,8 @@
           <h1 class="page-title">${isOwn ? "My Profile" : "Employee Profile"}</h1>
         </div>
         <div class="flex items-center gap-3">
+          ${isAdmin && !isOwn && target.accessRole === "EMPLOYEE" ? '<button class="btn btn-outline" id="role-btn" data-to="HR"><span class="material-symbols-outlined">upgrade</span>Promote to HR</button>' : ""}
+          ${isAdmin && !isOwn && target.accessRole === "HR" ? '<button class="btn btn-outline" id="role-btn" data-to="EMPLOYEE"><span class="material-symbols-outlined">arrow_downward</span>Revert to Employee</button>' : ""}
           ${isAdmin && !isOwn ? '<button class="btn btn-danger" id="remove-btn"><span class="material-symbols-outlined">delete</span>Remove</button>' : ""}
           <button class="btn btn-outline" id="edit-toggle"><span class="material-symbols-outlined">edit</span>Edit</button>
           <button class="btn btn-primary" id="save-btn" style="display:none;"><span class="material-symbols-outlined">save</span>Save Changes</button>
@@ -280,6 +282,27 @@
       editing = false; saveBtn.style.display = "none";
       editBtn.innerHTML = '<span class="material-symbols-outlined">edit</span>Edit';
       toast("Profile updated", "success");
+    });
+
+    // Promote to HR / revert to Employee (admin viewing someone else)
+    const roleBtn = document.getElementById("role-btn");
+    if (roleBtn) roleBtn.addEventListener("click", async () => {
+      const to = roleBtn.dataset.to;
+      const ok = await HRMS.ui.confirmDialog({
+        title: to === "HR" ? "Promote to HR?" : "Revert to Employee?",
+        message: to === "HR"
+          ? "Grant " + target.name + " HR/management access across the organization."
+          : "Remove HR access from " + target.name + " and set them back to Employee.",
+        confirmLabel: to === "HR" ? "Promote" : "Revert",
+      });
+      if (!ok) return;
+      try {
+        await store.apiSetRole(target.id, to);
+        target.accessRole = to;
+        target.access = to === "EMPLOYEE" ? "employee" : "admin";
+        toast(to === "HR" ? target.name + " is now HR" : target.name + " reverted to Employee", "success");
+        render();
+      } catch (err) { toast(err.message || "Could not update role", "error"); }
     });
 
     // Remove employee (admin viewing someone else)

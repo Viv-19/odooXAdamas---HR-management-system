@@ -179,6 +179,16 @@ class UserService {
     await prisma.user.delete({ where: { id: user.id } }); // cascades profile/attendance/leaves
     return { id: employeeId };
   }
+
+  /** Promote/demote an employee's access role (HR/Admin only). */
+  async setRole(employeeId, role) {
+    const valid = ["EMPLOYEE", "HR", "ADMIN"];
+    if (!valid.includes(role)) throw new Error("Invalid role");
+    const user = await prisma.user.findUnique({ where: { employeeId } });
+    if (!user) throw new Error("Employee not found");
+    await prisma.user.update({ where: { id: user.id }, data: { role } });
+    return this.getByEmployeeId(employeeId);
+  }
 }
 
 module.exports = new UserService();

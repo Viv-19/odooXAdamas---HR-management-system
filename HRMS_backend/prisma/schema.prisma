@@ -40,12 +40,12 @@ enum LeaveStatus {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id            String   @id @default(uuid())
-  employeeId    String   @unique
-  email         String   @unique
-  password      String
-  role          Role     @default(EMPLOYEE) // Everyone registers as EMPLOYEE; Admin assigns HR role later
-  isVerified    Boolean  @default(false)    // Email verification status
+  id         String  @id @default(uuid())
+  employeeId String  @unique
+  email      String  @unique
+  password   String
+  role       Role    @default(EMPLOYEE) // Everyone registers as EMPLOYEE; Admin assigns HR role later
+  isVerified Boolean @default(false) // Email verification status
 
   // Relations
   profile           Profile?
@@ -56,8 +56,8 @@ model User {
   reviewedLeaves    LeaveRequest[]     @relation("ReviewerLeaves")
   payrolls          Payroll[]
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
 }
@@ -87,87 +87,127 @@ model PasswordResetOtp {
   @@map("password_reset_otps")
 }
 
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profiles Profile[]
+
+  @@map("departments")
+}
+
 model Profile {
-  id              String   @id @default(uuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Personal Details
-  firstName       String
-  lastName        String
-  phone           String?
-  address         String?
-  profilePicUrl   String?
-  documents       String[] 
+  firstName     String
+  lastName      String
+  phone         String?
+  address       String?
+  profilePicUrl String?
+  documents     String[]
+  dateOfBirth   DateTime? @db.Date
+  gender        String?
+  nationality   String?
+  maritalStatus String?
+  personalEmail String?
 
-  // Job Details & Salary Structure
-  jobTitle        String?
-  department      String?
-  salaryStructure String?  
+  // Job Details
+  jobTitle       String?
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id])
+  location       String?
+  employmentType String? // Full-Time | Part-Time | Contract | Intern
+  managerName    String?
+  joiningDate    DateTime?   @db.Date
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  // Bank / Statutory (Private Info tab)
+  bankAccount String?
+  bankName    String?
+  ifsc        String?
+  pan         String?
+  uan         String?
+
+  // Salary structure (JSON: monthlyWage, yearlyWage, components[], pf, tax) + leave allocation
+  salaryStructure  Json?
+  paidLeaveBalance Int   @default(24)
+  sickLeaveBalance Int   @default(7)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("profiles")
 }
 
 model Attendance {
-  id          String           @id @default(uuid())
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  date        DateTime         @db.Date 
-  checkIn     DateTime?        
-  checkOut    DateTime?        
-  status      AttendanceStatus 
+  date     DateTime         @db.Date
+  checkIn  DateTime?
+  checkOut DateTime?
+  status   AttendanceStatus
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, date]) // Ensures an employee only has one attendance record per day
-
   @@map("attendances")
 }
 
 model LeaveRequest {
-  id              String      @id @default(uuid())
-  userId          String
-  user            User        @relation("EmployeeLeaves", fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Added reviewer relation to track who approved/rejected the leave
-  reviewerId      String?
-  reviewer        User?       @relation("ReviewerLeaves", fields: [reviewerId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation("EmployeeLeaves", fields: [userId], references: [id], onDelete: Cascade)
 
-  leaveType       LeaveType   
-  startDate       DateTime    @db.Date 
-  endDate         DateTime    @db.Date 
-  
-  employeeRemarks String?   
-  adminComments   String?   
-  
-  status          LeaveStatus @default(PENDING) 
+  // Reviewer relation to track who approved/rejected the leave
+  reviewerId String?
+  reviewer   User?   @relation("ReviewerLeaves", fields: [reviewerId], references: [id])
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  leaveType LeaveType
+  startDate DateTime  @db.Date
+  endDate   DateTime  @db.Date
+
+  employeeRemarks String?
+  adminComments   String?
+
+  status LeaveStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("leave_requests")
 }
 
 model Payroll {
-  id         String   @id @default(uuid())
-  userId     String   
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  monthYear  DateTime @db.Date 
+  monthYear  DateTime @db.Date
   basicPay   Float
   allowances Float?   @default(0)
   deductions Float?   @default(0)
   netSalary  Float
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, monthYear]) // An employee gets one payroll slip per month
-
   @@map("payrolls")
+}
+
+model Holiday {
+  id        String   @id @default(uuid())
+  date      DateTime @unique @db.Date
+  name      String
+  createdAt DateTime @default(now())
+
+  @@map("holidays")
 }

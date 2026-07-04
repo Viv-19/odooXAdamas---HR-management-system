@@ -276,6 +276,38 @@
       try { const r = await HRMS.api.get("/attendance/all" + (date ? "?date=" + date : "")); return r.res.ok ? r.data.data : null; }
       catch (_e) { return null; }
     },
+
+    // ---- Leave API -------------------------------------------------------
+    async loadLeaves() {
+      if (!window.HRMS.api) return data.leaveRequests;
+      try { const r = await HRMS.api.get("/leave"); if (r.res.ok && Array.isArray(r.data.data)) data.leaveRequests = r.data.data; } catch (_e) {}
+      return data.leaveRequests;
+    },
+    async loadBalance() {
+      if (!window.HRMS.api) return data.balances;
+      try { const r = await HRMS.api.get("/leave/balance"); if (r.res.ok && r.data.data) data.balances = r.data.data; } catch (_e) {}
+      return data.balances;
+    },
+    async loadHolidays() {
+      if (!window.HRMS.api) return data.holidays;
+      try { const r = await HRMS.api.get("/leave/holidays"); if (r.res.ok && Array.isArray(r.data.data)) data.holidays = r.data.data; } catch (_e) {}
+      return data.holidays;
+    },
+    async apiApplyLeave(payload) {
+      const r = await HRMS.api.post("/leave", payload);
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Could not submit leave");
+      return r.data.data;
+    },
+    async apiSetLeaveStatus(id, status) {
+      const r = await HRMS.api.put("/leave/" + id + "/status", { status });
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Could not update leave");
+      return r.data.data;
+    },
+    async apiAllocate(payload) {
+      const r = await HRMS.api.post("/leave/allocate", payload);
+      if (!r.res.ok) throw new Error((r.data && r.data.message) || "Could not allocate");
+      return r.data.data;
+    },
   };
 
   window.HRMS = window.HRMS || {};

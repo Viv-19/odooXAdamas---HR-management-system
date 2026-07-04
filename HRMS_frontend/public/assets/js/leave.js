@@ -191,13 +191,18 @@
     };
     form.start.addEventListener("change", recalc);
     form.end.addEventListener("change", recalc);
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!form.start.value || !form.end.value || form.end.value < form.start.value) { toast("Please choose a valid date range", "error"); return; }
-      store.addLeave({ empId: me.id, type: form.type.value, start: form.start.value, end: form.end.value, duration: daysInclusive(form.start.value, form.end.value), reason: form.reason.value.trim() });
-      m.close();
-      toast("Leave request submitted", "success");
-      renderEmployee(root);
+      if (window.HRMS.api) {
+        try {
+          await store.apiApplyLeave({ type: form.type.value, start: form.start.value, end: form.end.value, reason: form.reason.value.trim() });
+          m.close(); toast("Leave request submitted", "success"); render();
+        } catch (err) { toast(err.message || "Could not submit request", "error"); }
+      } else {
+        store.addLeave({ empId: me.id, type: form.type.value, start: form.start.value, end: form.end.value, duration: daysInclusive(form.start.value, form.end.value), reason: form.reason.value.trim() });
+        m.close(); toast("Leave request submitted", "success"); renderEmployee(root);
+      }
     });
   }
 
@@ -273,12 +278,14 @@
       </tr>`;
     }).join("");
 
-    body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => {
-      store.updateLeaveStatus(b.dataset.approve, "Approved"); toast("Request approved", "success"); renderAdmin(root);
-    }));
-    body.querySelectorAll("[data-reject]").forEach((b) => b.addEventListener("click", () => {
-      store.updateLeaveStatus(b.dataset.reject, "Rejected"); toast("Request rejected", "info"); renderAdmin(root);
-    }));
+    const act = async (id, status, tone) => {
+      if (window.HRMS.api) {
+        try { await store.apiSetLeaveStatus(id, status); } catch (err) { toast(err.message || "Update failed", "error"); return; }
+      } else { store.updateLeaveStatus(id, status); }
+      toast("Request " + status.toLowerCase(), tone); render();
+    };
+    body.querySelectorAll("[data-approve]").forEach((b) => b.addEventListener("click", () => act(b.dataset.approve, "Approved", "success")));
+    body.querySelectorAll("[data-reject]").forEach((b) => b.addEventListener("click", () => act(b.dataset.reject, "Rejected", "info")));
   }
 
   // Allocation modal (admin assigns time off)
@@ -301,15 +308,23 @@
           <div class="flex items-center justify-end gap-3"><button type="button" class="btn btn-outline" data-close>Discard</button><button type="submit" class="btn btn-primary">Allocate</button></div>
         </form>
       </div>`, { size: "md" });
-    m.root.querySelector("#alloc-form").addEventListener("submit", (e) => {
-      e.preventDefault(); m.close(); toast("Time-off allocated successfully", "success");
+    m.root.querySelector("#alloc-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const payload = { empId: f.emp.value, type: f.type.value, days: Number(f.days.value) || 0 };
+      if (window.HRMS.api) {
+        try { await store.apiAllocate(payload); m.close(); toast("Time-off allocated", "success"); render(); }
+        catch (err) { toast(err.message || "Could not allocate", "error"); }
+      } else { m.close(); toast("Time-off allocated", "success"); }
     });
   }
 
   // ------------------------------- Boot ----------------------------------
-  function render() {
+  async function render() {
     const root = document.getElementById("leave-root");
     if (!root) return;
+    await store.loadMe();
+    await Promise.all([store.loadLeaves(), store.loadBalance(), store.loadHolidays()]);
     if (store.isAdmin()) renderAdmin(root); else renderEmployee(root);
   }
   document.addEventListener("DOMContentLoaded", render);

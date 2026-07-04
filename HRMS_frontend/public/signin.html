@@ -274,7 +274,11 @@
                     localStorage.setItem('token', data.data.token);
                     // window.location.href = 'dashboard.html';
                 } else {
-                    errorEl.textContent = data.message || "Login failed";
+                    let errorMsg = data.message || "Login failed";
+                    if (data.errors && data.errors.length > 0) {
+                        errorMsg = data.errors[0].replace(/"/g, '');
+                    }
+                    errorEl.textContent = errorMsg;
                     errorEl.classList.remove('hidden');
                 }
             } catch (err) {

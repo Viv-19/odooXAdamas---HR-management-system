@@ -288,7 +288,11 @@
                     localStorage.setItem('verifyEmail', email);
                     window.location.href = 'verify.html';
                 } else {
-                    errorEl.textContent = data.message || "Signup failed";
+                    let errorMsg = data.message || "Signup failed";
+                    if (data.errors && data.errors.length > 0) {
+                        errorMsg = data.errors[0].replace(/"/g, ''); // Remove quotes from joi error
+                    }
+                    errorEl.textContent = errorMsg;
                     errorEl.classList.remove('hidden');
                 }
             } catch (err) {

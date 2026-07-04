@@ -10,14 +10,11 @@
   const store = HRMS.store;
   const { fmt, toast } = HRMS.ui;
 
-  const me = store.currentUser();
   const isAdmin = store.isAdmin();
   const wantId = HRMS.utils.query("id");
-  // Employees can never view someone else's profile.
-  const target = isAdmin && wantId ? (store.employee(wantId) || me) : me;
-  const isOwn = target.id === me.id;
   const canSalary = isAdmin;                 // Salary Info tab visibility
   const canEditAll = isAdmin;                // full edit vs limited
+  let me, target, isOwn;                      // resolved from the API in init()
 
   // Derived private-info sample values (stable per employee id).
   function priv(emp) {
@@ -294,7 +291,7 @@
         confirmLabel: "Remove", danger: true,
       });
       if (!ok) return;
-      store.removeEmployee(target.id);
+      try { await store.apiRemoveEmployee(target.id); } catch (_e) { store.removeEmployee(target.id); }
       toast("Employee removed", "info");
       setTimeout(() => (location.href = "employees.html"), 600);
     });
@@ -309,5 +306,16 @@
     if (up) up.addEventListener("click", () => toast("Document uploaded", "success"));
   }
 
-  document.addEventListener("DOMContentLoaded", render);
+  async function init() {
+    me = await store.loadMe();
+    if (isAdmin && wantId) {
+      await store.loadEmployees();
+      target = store.employee(wantId) || me;
+    } else {
+      target = me;
+    }
+    isOwn = target.id === me.id;
+    render();
+  }
+  document.addEventListener("DOMContentLoaded", init);
 })();

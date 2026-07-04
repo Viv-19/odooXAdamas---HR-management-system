@@ -27,7 +27,7 @@
     }
     form.addEventListener("input", refresh);
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       // Basic required validation
       let ok = true;
@@ -38,25 +38,28 @@
       });
       if (!ok) { HRMS.ui.toast("Please fill all required fields (*)", "error"); return; }
 
-      store.addEmployee({
+      const payload = {
         id: form.empId.value.trim(),
         name: form.name.value.trim(),
         role: form.role.value.trim(),
         department: form.department.value,
         email: form.email.value.trim(),
-        phone: form.phone.value.trim() || "—",
-        manager: form.manager.value.trim() || "—",
-        location: "—",
+        phone: form.phone.value.trim() || undefined,
+        manager: form.manager.value.trim() || undefined,
         employmentType: form.employmentType.value,
-        joinDate: form.joinDate.value || new Date().toISOString().slice(0, 10),
-        status: "present",
-        access: "employee",
-        avatar: "",
-        tag: form.role.value.trim(),
-      });
+        joinDate: form.joinDate.value || undefined,
+      };
 
-      HRMS.ui.toast("Employee created successfully", "success", 1400);
-      setTimeout(() => (location.href = "employees.html"), 800);
+      const submitBtn = document.querySelector('button[form="add-emp-form"]');
+      if (submitBtn) submitBtn.disabled = true;
+      try {
+        await store.apiCreateEmployee(payload);
+        HRMS.ui.toast("Employee created successfully", "success", 1400);
+        setTimeout(() => (location.href = "employees.html"), 800);
+      } catch (err) {
+        if (submitBtn) submitBtn.disabled = false;
+        HRMS.ui.toast(err.message || "Could not create employee", "error", 3200);
+      }
     });
   });
 })();

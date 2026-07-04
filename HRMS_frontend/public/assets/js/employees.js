@@ -72,14 +72,16 @@
           confirmLabel: "Remove", danger: true,
         });
         if (!ok) return;
-        store.removeEmployee(id);
+        try { await store.apiRemoveEmployee(id); } catch (_err) { store.removeEmployee(id); }
+        await store.loadEmployees();
         HRMS.ui.toast("Employee removed", "info");
         render(search ? search.value : "");
       });
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
+    await store.loadEmployees();
     render();
     if (search) search.addEventListener("input", HRMS.utils.debounce((e) => render(e.target.value), 180));
   });

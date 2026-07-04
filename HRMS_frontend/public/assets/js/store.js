@@ -116,7 +116,14 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (_e) {}
   }
 
+  // Coerce an API employee DTO's date to yyyy-mm-dd for the renderers.
+  function normalizeEmp(e) {
+    if (e && e.joinDate) e.joinDate = String(e.joinDate).slice(0, 10);
+    return e;
+  }
+
   const data = load();
+  let meCache = null;
 
   // ---- Session / role ----------------------------------------------------
   function getSession() {
@@ -147,6 +154,7 @@
     employees: () => data.employees,
     employee: (id) => data.employees.find((e) => e.id === id),
     currentUser: () => {
+      if (meCache) return meCache;
       try {
         const u = JSON.parse(localStorage.getItem('hrms_user'));
         if (u) {
@@ -204,6 +212,36 @@
         return true;
       }
       return false;
+    },
+
+    // ---- Live API (hybrid: fetch into cache, fall back to seed on failure) ----
+    async loadEmployees() {
+      try {
+        if (!window.HRMS.api) return data.employees;
+        const resp = await HRMS.api.get("/employees");
+        if (resp.res.ok && Array.isArray(resp.data.data)) {
+          data.employees = resp.data.data.map(normalizeEmp);
+        }
+      } catch (_e) {}
+      return data.employees;
+    },
+    async loadMe() {
+      try {
+        if (!window.HRMS.api) return api.currentUser();
+        const resp = await HRMS.api.get("/employees/me");
+        if (resp.res.ok && resp.data.data) { meCache = normalizeEmp(resp.data.data); return meCache; }
+      } catch (_e) {}
+      return api.currentUser();
+    },
+    async apiCreateEmployee(payload) {
+      const resp = await HRMS.api.post("/employees", payload);
+      if (!resp.res.ok) throw new Error((resp.data && resp.data.message) || "Create failed");
+      return resp.data.data;
+    },
+    async apiRemoveEmployee(id) {
+      const resp = await HRMS.api.delete("/employees/" + id);
+      if (!resp.res.ok) throw new Error((resp.data && resp.data.message) || "Delete failed");
+      return true;
     },
   };
 

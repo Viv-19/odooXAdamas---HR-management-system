@@ -143,7 +143,7 @@
   }
 
   function salaryTab() {
-    const s = store.salary();
+    const s = (target && target.salaryStructure) || store.salary();
     const net = s.monthlyWage - s.pf.employee - s.tax.professional;
     return `
       <div class="card card-pad" style="background:var(--info-container);border-color:var(--primary-fixed-dim);margin-bottom:20px;">

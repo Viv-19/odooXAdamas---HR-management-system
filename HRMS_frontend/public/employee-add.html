@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Employee — HRMS</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <style>
+    .section-title { display:flex;align-items:center;gap:8px;font-family:var(--font-heading);font-weight:600;font-size:16px;padding-bottom:12px;border-bottom:1px solid var(--surface-variant);margin-bottom:16px; }
+    .section-title .material-symbols-outlined { color:var(--primary-hover); }
+    .photo-drop { border:1.5px dashed var(--outline-variant); border-radius:9999px; width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--on-surface-variant);transition:border-color .15s,background .15s; }
+    .photo-drop:hover { border-color:var(--primary); background:var(--primary-light); color:var(--primary-hover); }
+    .check-step { display:flex;align-items:center;gap:10px;font-size:14px;color:var(--on-surface-variant);padding:6px 0; }
+    .check-step .material-symbols-outlined { font-size:20px;color:var(--outline-variant); }
+    .check-step.done .material-symbols-outlined { color:var(--success); }
+    .check-step.done { color:var(--on-surface); }
+  </style>
+</head>
+<body>
+  <div class="app-layout" id="hrms-app">
+    <div class="app-main">
+      <header class="app-topbar" id="hrms-topbar"></header>
+      <main class="app-content">
+        <div class="page-header">
+          <div>
+            <a href="employees.html" class="flex items-center gap-1 link mb-1" style="font-size:13px;">
+              <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span> Back to Employees
+            </a>
+            <h1 class="page-title">Add New Employee</h1>
+            <p class="page-subtitle">Enter the details below to provision a new team member.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="employees.html" class="btn btn-outline">Cancel</a>
+            <button form="add-emp-form" type="submit" class="btn btn-primary"><span class="material-symbols-outlined">person_add</span>Create Employee</button>
+          </div>
+        </div>
+
+        <form id="add-emp-form" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Left: details -->
+          <div class="lg:col-span-2 flex flex-col gap-5">
+            <!-- Personal -->
+            <div class="card card-pad">
+              <div class="section-title"><span class="material-symbols-outlined">person</span>Personal Details</div>
+              <div class="flex flex-col gap-4">
+                <div class="field"><label for="name">Full Name *</label><input class="input" id="name" name="name" required placeholder="e.g. Jane Doe"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="field"><label for="email">Email Address *</label><input class="input" id="email" name="email" type="email" required placeholder="jane.doe@company.com"></div>
+                  <div class="field"><label for="phone">Phone Number</label><input class="input" id="phone" name="phone" placeholder="+1 (555) 000-0000"></div>
+                </div>
+                <div class="field"><label for="address">Residential Address</label><input class="input" id="address" name="address" placeholder="Full address"></div>
+              </div>
+            </div>
+
+            <!-- Job -->
+            <div class="card card-pad">
+              <div class="section-title"><span class="material-symbols-outlined">work</span>Job Details</div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="field"><label for="empId">Employee ID *</label><input class="input" id="empId" name="empId" required placeholder="EMP-2024-000"></div>
+                <div class="field"><label for="joinDate">Date of Joining</label><input class="input" id="joinDate" name="joinDate" type="date"></div>
+                <div class="field"><label for="department">Department *</label>
+                  <select class="select" id="department" name="department" required>
+                    <option value="">Select Department</option>
+                    <option>Engineering</option><option>Human Resources</option><option>Finance</option>
+                    <option>Marketing</option><option>Sales</option><option>Design</option>
+                  </select>
+                </div>
+                <div class="field"><label for="role">Position / Role *</label><input class="input" id="role" name="role" required placeholder="e.g. Senior Frontend Developer"></div>
+                <div class="field"><label for="manager">Reporting Manager</label><input class="input" id="manager" name="manager" placeholder="Search managers…"></div>
+                <div class="field"><label for="employmentType">Employment Type</label>
+                  <select class="select" id="employmentType" name="employmentType">
+                    <option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Intern</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: photo + completion -->
+          <div class="flex flex-col gap-5">
+            <div class="card card-pad flex flex-col items-center text-center">
+              <div class="photo-drop mb-3">
+                <span class="material-symbols-outlined" style="font-size:26px;">add_a_photo</span>
+                <span style="font-size:12px;">Upload</span>
+              </div>
+              <h4 style="font-weight:600;font-size:14px;">Profile Picture</h4>
+              <p class="text-muted" style="font-size:12px;">Max size 2MB. JPG or PNG.</p>
+            </div>
+
+            <div class="card card-pad">
+              <div class="label mb-2">Completion Status</div>
+              <div id="completion">
+                <div class="check-step" data-step="personal"><span class="material-symbols-outlined">radio_button_unchecked</span>Personal Details</div>
+                <div class="check-step" data-step="job"><span class="material-symbols-outlined">radio_button_unchecked</span>Job Details</div>
+                <div class="check-step" data-step="salary"><span class="material-symbols-outlined">radio_button_unchecked</span>Salary Structure</div>
+              </div>
+              <p class="field-hint" style="margin-top:10px;">Salary structure can be configured after creation from the Payroll module.</p>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/shell.js"></script>
+  <script src="assets/js/employee-add.js"></script>
+  <script>HRMS.shell.mount({ active: "employees" });</script>
+</body>
+</html>

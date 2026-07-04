@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Reset OTP — HRMS</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script src="assets/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <style>
+    .otp-box { width:52px; height:60px; text-align:center; font-size:24px; font-weight:700; font-family:var(--font-heading);
+      border:2px solid var(--outline-variant); border-radius:.6rem; color:var(--on-surface); transition:border-color .15s, box-shadow .15s; }
+    .otp-box:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(14,165,233,.18); }
+    @media (max-width:420px){ .otp-box{ width:44px; height:54px; font-size:20px; } }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4"
+      style="background:radial-gradient(1200px 600px at 50% -10%, #e0f2fe 0%, var(--background) 55%);">
+  <main class="w-full max-w-[480px]">
+    <a href="signin.html" class="flex items-center justify-center gap-3 mb-8">
+      <span style="width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-container));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(14,165,233,.35);">
+        <span class="material-symbols-outlined icon-fill" style="color:#fff;">corporate_fare</span>
+      </span>
+      <span class="h-lg" style="font-size:26px;">HRMS</span>
+    </a>
+
+    <div class="card animate-in text-center" style="padding:32px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--primary-container),var(--primary),var(--primary-fixed-dim));"></div>
+
+      <div class="mx-auto flex items-center justify-center" style="width:88px;height:88px;border-radius:9999px;background:var(--primary-light);margin:12px auto 20px;">
+        <span class="material-symbols-outlined icon-fill" style="font-size:44px;color:var(--primary-hover);">lock_reset</span>
+      </div>
+
+      <h1 class="h-lg mb-2">Verify your identity</h1>
+      <p class="text-muted mb-1" style="font-size:15px;">We've sent a 6-digit code to</p>
+      <p class="mb-6" style="font-weight:600;font-size:15px;" data-email-display>your email address</p>
+
+      <div class="flex justify-center gap-2 mb-6">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 1">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 2">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 3">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 4">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 5">
+        <input class="otp-box" data-otp maxlength="1" inputmode="numeric" aria-label="Digit 6">
+      </div>
+
+      <p id="error-msg" class="hidden mb-4" style="color:var(--error);font-size:14px;font-weight:500;"></p>
+
+      <button id="verify-btn" class="btn btn-primary" style="width:100%;" disabled>Verify OTP</button>
+
+      <p class="text-muted mt-5" style="font-size:14px;">
+        Didn't receive it?
+        <button id="resend-btn" class="link" style="background:none;border:none;cursor:pointer;font-size:14px;">Resend code<span id="resend-countdown"></span></button>
+      </p>
+      <a class="inline-flex items-center gap-1 link mt-4" style="font-size:13px;" href="forgot-password.html">
+        <span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span> Back to forgot password
+      </a>
+    </div>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/verify-reset-otp.js"></script>
+</body>
+</html>

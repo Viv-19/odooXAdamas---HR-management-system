@@ -146,25 +146,77 @@
     forgot(form) {
       const email = form.email;
       email.addEventListener("input", () => clearError(email));
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!isEmail(email.value)) { setError(email, "Enter a valid email address"); return; }
-        HRMS.ui.toast("Reset code sent to your email", "success", 1400);
-        setTimeout(() => (location.href = "reset-password.html?email=" + encodeURIComponent(email.value)), 900);
+
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+
+        try {
+          const { res, data } = await HRMS.api.post('/auth/forgot-password', { email: email.value });
+          if (res.ok) {
+            HRMS.ui.toast("Reset code sent to your email", "success", 1400);
+            setTimeout(() => (location.href = "verify-reset-otp?email=" + encodeURIComponent(email.value)), 900);
+          } else {
+            let errorMsg = data.message || "Failed to send reset code";
+            if (data.errors && data.errors.length > 0) errorMsg = data.errors[0].replace(/"/g, '');
+            setError(email, errorMsg);
+            if (btn) { btn.disabled = false; btn.textContent = "Send Reset Code"; }
+          }
+        } catch (err) {
+          console.error(err);
+          setError(email, "Network error connecting to backend.");
+          if (btn) { btn.disabled = false; btn.textContent = "Send Reset Code"; }
+        }
       });
     },
 
     reset(form) {
       const pw = form.password, cpw = form.confirmPassword;
+      const email = new URLSearchParams(location.search).get("email");
+      const resetToken = sessionStorage.getItem("hrms_reset_token");
+
+      // Guard: if no reset token, user hasn't verified OTP
+      if (!resetToken || !email) {
+        HRMS.ui.toast("Please verify your identity first", "error", 2000);
+        setTimeout(() => (location.href = "forgot-password"), 1000);
+        return;
+      }
+
       [pw, cpw].forEach((i) => i && i.addEventListener("input", () => clearError(i)));
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
         let ok = true;
         if (!strongPw(pw.value)) { setError(pw, "Min 8 chars incl. a special character"); ok = false; }
         if (cpw.value !== pw.value) { setError(cpw, "Passwords do not match"); ok = false; }
         if (!ok) return;
-        HRMS.ui.toast("Password updated — please sign in", "success", 1400);
-        setTimeout(() => (location.href = "signin.html"), 900);
+
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) { btn.disabled = true; btn.textContent = "Updating…"; }
+
+        try {
+          const { res, data } = await HRMS.api.post('/auth/reset-password', {
+            email,
+            resetToken,
+            password: pw.value,
+            confirmPassword: cpw.value,
+          });
+          if (res.ok) {
+            sessionStorage.removeItem("hrms_reset_token");
+            HRMS.ui.toast("Password updated — please sign in", "success", 1400);
+            setTimeout(() => (location.href = "signin.html"), 900);
+          } else {
+            let errorMsg = data.message || "Password reset failed";
+            if (data.errors && data.errors.length > 0) errorMsg = data.errors[0].replace(/"/g, '');
+            setError(pw, errorMsg);
+            if (btn) { btn.disabled = false; btn.textContent = "Update Password"; }
+          }
+        } catch (err) {
+          console.error(err);
+          setError(pw, "Network error connecting to backend.");
+          if (btn) { btn.disabled = false; btn.textContent = "Update Password"; }
+        }
       });
     },
   };

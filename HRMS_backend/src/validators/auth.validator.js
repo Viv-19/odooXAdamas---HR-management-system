@@ -48,8 +48,52 @@ const verifyOtpSchema = Joi.object({
   }),
 });
 
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email",
+    "any.required": "Email is required",
+  }),
+});
+
+const verifyPasswordResetOtpSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email",
+    "any.required": "Email is required",
+  }),
+  otp: Joi.string().length(6).required().messages({
+    "string.length": "OTP must be exactly 6 characters long",
+    "any.required": "OTP is required",
+  }),
+});
+
+const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email",
+    "any.required": "Email is required",
+  }),
+  resetToken: Joi.string().required().messages({
+    "any.required": "Reset token is required",
+  }),
+  password: Joi.string()
+    .min(8)
+    .pattern(new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])"))
+    .required()
+    .messages({
+      "string.min": "Password must be at least 8 characters long",
+      "string.pattern.base": "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
+      "any.required": "Password is required",
+    }),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
+    "any.only": "Passwords do not match",
+    "any.required": "Confirm Password is required",
+  }),
+});
+
 module.exports = {
   signupSchema,
   signinSchema,
   verifyOtpSchema,
+  forgotPasswordSchema,
+  verifyPasswordResetOtpSchema,
+  resetPasswordSchema,
 };

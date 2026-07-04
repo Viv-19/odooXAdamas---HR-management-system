@@ -40,6 +40,34 @@ class AuthController {
       next(error);
     }
   }
+
+  static async forgotPassword(req, res, next) {
+    try {
+      const result = await AuthService.forgotPassword(req.body);
+      return ApiResponse.success(res, HttpStatusCode.OK, "Password reset OTP sent to your email", result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async verifyPasswordResetOtp(req, res, next) {
+    try {
+      const result = await AuthService.verifyPasswordResetOtp(req.body);
+      return ApiResponse.success(res, HttpStatusCode.OK, "OTP verified successfully", result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async resetPassword(req, res, next) {
+    try {
+      const { confirmPassword, ...resetData } = req.body;
+      const result = await AuthService.resetPassword(resetData);
+      return ApiResponse.success(res, HttpStatusCode.OK, "Password reset successfully", result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AuthController;
